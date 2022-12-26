@@ -3,6 +3,9 @@
   "displayName": "Code Buddy",
   "description": "Buddy who helps out writing better code  using OpenAi",
   "version": "0.0.1",
+  "repository": "github:dreygur/CodeBuddy",
+  "author": "Rakibul Yeasin",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -23,8 +26,12 @@
     ],
     "commands": [
       {
-        "command": "code-buddy.command",
-        "title": "Hello World"
+        "command": "code-buddy.insertApi",
+        "title": "CodeBuddy: Insert OpenAi api key"
+      },
+      {
+        "command": "code-buddy.clearApi",
+        "title": "CodeBuddy: Clear stored OpenAi api key"
       }
     ]
   },
@@ -37,8 +44,7 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "dev": "ts-node test.ts"
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
@@ -52,7 +58,6 @@
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
     "ts-loader": "^9.4.1",
-    "ts-node": "^10.9.1",
     "typescript": "^4.9.3",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.0"

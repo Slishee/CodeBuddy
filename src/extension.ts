@@ -11,6 +11,18 @@ const COMMENT_REGEX = [
 // This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  let insertApi = vscode.commands.registerCommand('code-buddy.insertApi', async () => {
+    let input = await openInputBoxForApiKey();
+    if (!input) { return vscode.window.showWarningMessage("Please enter you API Key"); }
+    storeApiKey(input);
+  });
+  context.subscriptions.push(insertApi);
+
+  let clearApi = vscode.commands.registerCommand('code-buddy.clearApi', async () => {
+    storeApiKey("");
+  });
+  context.subscriptions.push(clearApi);
+
   let disposable = vscode.commands.registerCommand('code-buddy.command', async () => {
     let apiKey = getApiKey();
     if (!apiKey) {
@@ -168,17 +180,17 @@ function getComment(): string {
 
 async function openInputBoxForApiKey() {
   return await vscode.window.showInputBox({
-    placeHolder: 'Enter your API Key of OpenAI'
+    placeHolder: 'OpenAi api key'
   });
 }
 
 async function storeApiKey(apiKey: string) {
-  vscode.workspace.getConfiguration().update('openAi.apiKey', apiKey, true);
+  vscode.workspace.getConfiguration().update('codeBuddy.apiKey', apiKey, true);
 }
 
 // Get API key from config
 function getApiKey(): string | undefined {
-  return vscode.workspace.getConfiguration().get('openAi.apiKey');
+  return vscode.workspace.getConfiguration().get('codeBuddy.apiKey');
 }
 
 
