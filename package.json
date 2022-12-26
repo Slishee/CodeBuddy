@@ -1,8 +1,8 @@
 {
   "name": "code-buddy",
   "displayName": "Code Buddy",
-  "description": "Buddy who helps out writing better code  using OpenAi",
-  "version": "0.0.1",
+  "description": "Buddy who helps out writing better code using OpenAi",
+  "version": "0.0.2",
   "repository": "github:dreygur/CodeBuddy",
   "author": "Rakibul Yeasin",
   "publisher": "dreygur",
@@ -33,6 +33,10 @@
       {
         "command": "code-buddy.clearApi",
         "title": "CodeBuddy: Clear stored OpenAi api key"
+      },
+      {
+        "command": "code-buddy.checkApi",
+        "title": "CodeBuddy: Check for available api key"
       }
     ]
   },
