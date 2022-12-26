@@ -1,19 +1,16 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import axios, { Axios, AxiosResponse } from 'axios';
 
-// This method is called when your extension is activated
+// Comments
+const COMMENT_REGEX = [
+  /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/gm, // /* */ , //
+  /#[^\n]*/g, // #
+  /<!--([\s\S]*?)-->/g // <!-- -->
+];
+
+// This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Congratulations, your extension "code-buddy" is now active!');
-
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
   let disposable = vscode.commands.registerCommand('code-buddy.command', async () => {
     let apiKey = getApiKey();
     if (!apiKey) {
@@ -31,11 +28,10 @@ export function activate(context: vscode.ExtensionContext) {
       return vscode.window.showWarningMessage("You must use a minimum of three words");
     }
 
-    let statusBarMsg = vscode.window.setStatusBarMessage("Searching...");
-
+    // let statusBarMsg = vscode.window.setStatusBarMessage("Searching...");
+    vscode.window.showInformationMessage("Searching...");
     let response = await requestToOpenApi(comment, apiKey);
-
-    statusBarMsg.dispose();
+    // statusBarMsg.dispose();
 
     if (response.status !== 200) {
       vscode.window.setStatusBarMessage("Failed", 3000);
@@ -43,9 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     let selection = await insertText(response.data);
-    if (selection) {
-      selectText(selection);
-    }
+    if (selection) { selectText(selection); }
   });
 
   context.subscriptions.push(disposable);
@@ -86,16 +80,15 @@ async function requestToOpenApi(query: string, apiKey: string): Promise<AxiosRes
   try {
     response = await axios.request(options);
   } catch (err: any) {
-    response = err.response;
     storeApiKey(""); // Remove the invalid API Key.
-    // return { status: 404, statusText: response.data.error.message };
-    return response;
+    return err.response;
   }
 
   if (response.status !== 200) { return response; }
 
   let text = response.data.choices[0].text;
-  return text.slice(2, text.length);
+  response.data = text.slice(2, text.length);
+  return response;
 }
 
 /**
@@ -137,10 +130,8 @@ async function insertText(text: string): Promise<vscode.Selection | undefined> {
  * @returns {vscode.Position}
  */
 function getEndPosition(text: string, startLine: number): vscode.Position {
-  let lines = text.split("\n");
-  let line = startLine + lines.length;
-  let endPos = new vscode.Position(line, 0);
-  return endPos;
+  let line = startLine + text.indexOf("\n") > -1 ? text.split("\n").length : 0;
+  return new vscode.Position(line, 0);
 }
 
 /**
@@ -163,8 +154,7 @@ function getComment(): string {
   let editor = vscode.window.activeTextEditor;
   if (!editor) { return ""; }
 
-  let lineIndex = editor.selection.active.line;
-  let lineText = editor.document.lineAt(lineIndex).text;
+  let lineText = editor.document.lineAt(editor.selection.active.line).text;
 
   let comments, i = 0;
   do {
@@ -177,28 +167,20 @@ function getComment(): string {
 }
 
 async function openInputBoxForApiKey() {
-  let input = await vscode.window.showInputBox({
+  return await vscode.window.showInputBox({
     placeHolder: 'Enter your API Key of OpenAI'
   });
-  return input;
 }
 
 async function storeApiKey(apiKey: string) {
-  let config = vscode.workspace.getConfiguration();
-  config.update('openAi.apiKey', apiKey, true);
+  vscode.workspace.getConfiguration().update('openAi.apiKey', apiKey, true);
 }
 
+// Get API key from config
 function getApiKey(): string | undefined {
-  let config = vscode.workspace.getConfiguration();
-  let apiKey: string | undefined = config.get('openAi.apiKey');
-  return apiKey;
+  return vscode.workspace.getConfiguration().get('openAi.apiKey');
 }
 
-const COMMENT_REGEX = [
-  /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/gm, // /* */ , //
-  /#[^\n]*/g, // #
-  /<!--([\s\S]*?)-->/g // <!-- -->
-];
 
 // This method is called when your extension is deactivated
 export function deactivate() { }
