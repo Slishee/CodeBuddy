@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import axios, { Axios, AxiosResponse } from 'axios';
 
+const EXTENSION_NAME = "code-buddy";
+
 // Comments
 const COMMENT_REGEX = [
   /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/gm, // /* */ , //
@@ -11,25 +13,39 @@ const COMMENT_REGEX = [
 // This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  // Create a new configuration instance
+  let config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+
+  // Subscribe to changes in the configuration
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(() => {
+    config = vscode.workspace.getConfiguration(EXTENSION_NAME);
+  }));
+
+
   let insertApi = vscode.commands.registerCommand('code-buddy.insertApi', async () => {
     let input = await openInputBoxForApiKey();
     if (!input) { return vscode.window.showWarningMessage("Please enter you API Key"); }
     storeApiKey(input);
+    vscode.window.showInformationMessage("Inserted API Key");
   });
   context.subscriptions.push(insertApi);
 
-  let clearApi = vscode.commands.registerCommand('code-buddy.clearApi', async () => {
-    storeApiKey("");
+  let clearApi = vscode.commands.registerCommand('code-buddy.clearApi', () => {
+    storeApiKey(undefined);
   });
   context.subscriptions.push(clearApi);
 
   let disposable = vscode.commands.registerCommand('code-buddy.command', async () => {
     let apiKey = getApiKey();
+    vscode.window.showInformationMessage(`Api Key: ${apiKey}`);
     if (!apiKey) {
       let input = await openInputBoxForApiKey();
+      vscode.window.showInformationMessage(`Input: ${input}`);
       if (!input) { return vscode.window.showWarningMessage("Please enter you API Key"); }
       apiKey = input;
       storeApiKey(apiKey);
+      let key = getApiKey();
+      vscode.window.showInformationMessage(`Api Key: ${key}`);
     }
 
     const comment = getComment();
@@ -40,10 +56,9 @@ export function activate(context: vscode.ExtensionContext) {
       return vscode.window.showWarningMessage("You must use a minimum of three words");
     }
 
-    // let statusBarMsg = vscode.window.setStatusBarMessage("Searching...");
-    vscode.window.showInformationMessage("Searching...");
+    let statusBarMsg = vscode.window.setStatusBarMessage("[CodeBuddy] Searching...");
     let response = await requestToOpenApi(comment, apiKey);
-    // statusBarMsg.dispose();
+    statusBarMsg.dispose();
 
     if (response.status !== 200) {
       vscode.window.setStatusBarMessage("Failed", 3000);
@@ -92,7 +107,7 @@ async function requestToOpenApi(query: string, apiKey: string): Promise<AxiosRes
   try {
     response = await axios.request(options);
   } catch (err: any) {
-    storeApiKey(""); // Remove the invalid API Key.
+    storeApiKey(undefined); // Remove the invalid API Key.
     return err.response;
   }
 
@@ -184,15 +199,17 @@ async function openInputBoxForApiKey() {
   });
 }
 
-async function storeApiKey(apiKey: string) {
-  vscode.workspace.getConfiguration().update('codeBuddy.apiKey', apiKey, true);
+function storeApiKey(apiKey: string | undefined) {
+  vscode.workspace.getConfiguration(EXTENSION_NAME).update('apiKey', apiKey);
 }
 
 // Get API key from config
 function getApiKey(): string | undefined {
-  return vscode.workspace.getConfiguration().get('codeBuddy.apiKey');
+  let apiKey = vscode.workspace.getConfiguration(EXTENSION_NAME).get('apiKey');
+  vscode.window.showInformationMessage(`${apiKey}`);
+  if (typeof apiKey === 'string') { return apiKey; }
+  return undefined;
 }
-
 
 // This method is called when your extension is deactivated
 export function deactivate() { }

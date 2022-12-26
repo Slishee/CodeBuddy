@@ -5,6 +5,7 @@
   "version": "0.0.1",
   "repository": "github:dreygur/CodeBuddy",
   "author": "Rakibul Yeasin",
+  "publisher": "dreygur",
   "license": "MIT",
   "engines": {
     "vscode": "^1.74.0"
