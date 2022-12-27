@@ -1,14 +1,12 @@
 import * as vscode from 'vscode';
 import *  as util from './utils';
 
-// This method is called when the extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   // Set api key and store to global
   let insertApi = vscode.commands.registerCommand('code-buddy.insertApi', async () => {
     let input = await util.openInputBoxForApiKey();
     if (!input) { return vscode.window.showWarningMessage("Please enter you API Key"); }
-    util.storeApiKey(input);
+    await util.storeApiKey(input);
     vscode.window.showInformationMessage("Inserted API Key");
   });
   context.subscriptions.push(insertApi);
@@ -21,8 +19,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(checkApi);
 
   // Clear api key from global
-  let clearApi = vscode.commands.registerCommand('code-buddy.clearApi', () => {
-    util.storeApiKey(undefined);
+  let clearApi = vscode.commands.registerCommand('code-buddy.clearApi', async () => {
+    await util.storeApiKey(undefined);
   });
   context.subscriptions.push(clearApi);
 
@@ -30,10 +28,9 @@ export function activate(context: vscode.ExtensionContext) {
     let apiKey = util.getApiKey();
     if (!apiKey) {
       let input = await util.openInputBoxForApiKey();
-      vscode.window.showInformationMessage(`Input: ${input}`);
       if (!input) { return vscode.window.showWarningMessage("Please enter you API Key"); }
       apiKey = input;
-      util.storeApiKey(apiKey);
+      await util.storeApiKey(apiKey);
     }
 
     const comment = util.getComment();
