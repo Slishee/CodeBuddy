@@ -44,7 +44,7 @@
       "properties": {
         "codeBuddy.apiKey": {
           "type": "string",
-          "description": "The API key for accessing OpenAI services"
+          "description": "API key from OpenAI"
         }
       }
     }
