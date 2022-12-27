@@ -2,7 +2,7 @@
   "name": "code-buddy",
   "displayName": "Code Buddy",
   "description": "Buddy who helps out writing better code using OpenAi",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": "github:dreygur/CodeBuddy",
   "author": "Rakibul Yeasin",
   "publisher": "dreygur",
