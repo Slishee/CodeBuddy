@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import axios, { Axios, AxiosResponse } from 'axios';
 import COMMENT_REGEX from "../utils/reg";
 
 export async function insertText(text: string): Promise<vscode.Selection | undefined> {
